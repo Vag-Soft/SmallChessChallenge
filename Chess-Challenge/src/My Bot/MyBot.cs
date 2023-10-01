@@ -17,7 +17,6 @@ public class MyBot : IChessBot
         return bestMove;
     }
 
-
     //Evaluation function that takes into account the pieces of each colour
     public int BoardEvaluation(Board board, bool isWhite)
     {
@@ -77,13 +76,63 @@ public class MyBot : IChessBot
         }
 
 
+        //Evaluating according to the capture moves
+        Move[] capMoves = board.GetLegalMoves(true);
         if (isWhite)
         {
+            foreach (Move move in capMoves)
+            {
+                PieceType pieceType = move.CapturePieceType;
+                if (pieceType == PieceType.King)
+                {
+                    whiteEval += 200;
+                }
+                else if (pieceType == PieceType.Queen)
+                {
+                    whiteEval += 80;
+                }
+                else
+                {
+                    whiteEval += 40;
+                }
+            }
+
+            if (board.TrySkipTurn())
+            {
+                blackEval += board.GetLegalMoves(true).Length * 30;
+                board.UndoSkipTurn();
+            }
+
             return whiteEval - blackEval;
         }
-        return blackEval - whiteEval;
-    }
+        else
+        {
+            foreach (Move move in capMoves)
+            {
+                PieceType pieceType = move.CapturePieceType;
+                if (pieceType == PieceType.King)
+                {
+                    blackEval += 200;
+                }
+                else if (pieceType == PieceType.Queen)
+                {
+                    blackEval += 80;
+                }
+                else
+                {
+                    blackEval += 40;
+                }
+            }
 
+            if (board.TrySkipTurn())
+            {
+                whiteEval += board.GetLegalMoves(true).Length * 30;
+                board.UndoSkipTurn();
+            }
+
+            return blackEval - whiteEval;
+        }
+    }
 
     //Minimax search function with alpha beta pruning
     public int AlphaBetaSearch(Board board, ref Move bestMove, int depth, int initialDepth, int a, int b, bool isMaxPlayer, bool isWhite)

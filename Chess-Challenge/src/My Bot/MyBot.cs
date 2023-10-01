@@ -29,20 +29,29 @@ public class MyBot : IChessBot
             int value = -99999;
             foreach (Move move in board.GetLegalMoves())
             {
-                board.MakeMove(move);
-                int childValue = AlphaBetaSearch(board, ref bestMove, depth - 1, initialDepth, a, b, false, isWhite);
-                if (childValue > value)
+                if (!board.GameMoveHistory.Contains(move))
                 {
-                    value = childValue;
-                    if (initialDepth == depth)
+                    board.MakeMove(move);
+                    if (board.IsDraw())
                     {
-                        bestMove = move;
+                        board.UndoMove(move);
+                        continue;
                     }
+
+                    int childValue = AlphaBetaSearch(board, ref bestMove, depth - 1, initialDepth, a, b, false, isWhite);
+                    if (childValue > value)
+                    {
+                        value = childValue;
+                        if (initialDepth == depth)
+                        {
+                            bestMove = move;
+                        }
+                    }
+                    board.UndoMove(move);
+                    a = Math.Max(a, value);
+                    if (a >= b)
+                        break;
                 }
-                board.UndoMove(move);
-                a = Math.Max(a, value);
-                if (a >= b)
-                    break;
             }
             return value;
         }
@@ -51,20 +60,29 @@ public class MyBot : IChessBot
             int value = +99999;
             foreach (Move move in board.GetLegalMoves())
             {
-                board.MakeMove(move);
-                int childValue = AlphaBetaSearch(board, ref bestMove, depth - 1, initialDepth, a, b, true, isWhite);
-                if (childValue < value)
+                if (!board.GameMoveHistory.Contains(move))
                 {
-                    value = childValue;
-                    if (initialDepth == depth)
+                    board.MakeMove(move);
+                    if (board.IsDraw())
                     {
-                        bestMove = move;
+                        board.UndoMove(move);
+                        continue;
                     }
+
+                    int childValue = AlphaBetaSearch(board, ref bestMove, depth - 1, initialDepth, a, b, true, isWhite);
+                    if (childValue < value)
+                    {
+                        value = childValue;
+                        if (initialDepth == depth)
+                        {
+                            bestMove = move;
+                        }
+                    }
+                    board.UndoMove(move);
+                    a = Math.Min(a, value);
+                    if (a >= b)
+                        break;
                 }
-                board.UndoMove(move);
-                a = Math.Min(a, value);
-                if (a >= b)
-                    break;
             }
             return value;
         }
